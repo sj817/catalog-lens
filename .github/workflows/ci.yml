@@ -28,9 +28,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Install vsce
-        run: pnpm add -g @vscode/vsce
-
       - name: Lint
         run: pnpm run lint
 
@@ -67,21 +64,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Install vsce
-        run: pnpm add -g @vscode/vsce
-
       - name: Compile
         run: pnpm run compile
 
       - name: Publish to VS Code Marketplace
-        run: vsce publish --no-dependencies -p ${{ secrets.VSCE_PAT }}
+        run: pnpm exec vsce publish --no-dependencies -p ${{ secrets.VSCE_PAT }}
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-
-      - name: Publish to Open VSX
-        run: |
-          pnpm add -g ovsx
-          ovsx publish --no-dependencies -p ${{ secrets.OVSX_PAT }}
-        env:
-          OVSX_PAT: ${{ secrets.OVSX_PAT }}
-        continue-on-error: true
