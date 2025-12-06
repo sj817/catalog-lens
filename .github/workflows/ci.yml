@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, master]
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
     branches: [main, master]
 
@@ -22,11 +22,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Install vsce
+        run: pnpm add -g @vscode/vsce
 
       - name: Lint
         run: pnpm run lint
@@ -41,7 +44,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: catalog-lens-vsix
-          path: '*.vsix'
+          path: "*.vsix"
 
   publish:
     needs: build
@@ -58,8 +61,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
