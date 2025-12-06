@@ -1,0 +1,8 @@
+{
+  "name": "my-app",
+  "version": "3.1.0",
+  "description": "My App - testing direct package reference",
+  "dependencies": {
+    "@example/utils": "workspace:^"
+  }
+}

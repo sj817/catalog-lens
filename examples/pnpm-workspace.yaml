@@ -1,9 +1,15 @@
 # 示例 pnpm-workspace.yaml
-# 用于测试 Catalog Lens 插件功能
+# 用于测试 Package Lens 插件功能
 
 packages:
-  - 'packages/*'
-  - 'apps/*'
+  # 指定根目录直接子目录中的包
+  - "my-app"
+  # packages/ 直接子目录中的所有包
+  - "packages/*"
+  # apps/ 直接子目录中的所有包
+  - "apps/*"
+  # 排除测试目录中的包
+  - "!**/test/**"
 
 catalog:
   # 直接版本号格式 - 会显示 ✅ 或 🔶 状态
@@ -38,7 +44,7 @@ catalogs:
   react18:
     react: ^18.2.0
     react-dom: ^18.2.0
-  
+
   vue3:
     vue: ^3.4.0
     vue-router: ^4.2.0

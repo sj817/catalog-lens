@@ -3,11 +3,14 @@ import { CompletionProvider } from './providers/completionProvider'
 import { HoverProvider } from './providers/hoverProvider'
 import { VersionDecorationProvider } from './providers/decorationProvider'
 import { NpmService } from './services/npmService'
+import { WorkspacePackageService } from './services/workspacePackageService'
 
 export function activate (context: vscode.ExtensionContext) {
-  console.log('Catalog Lens 插件已激活')
+  console.log('Package Lens 插件已激活')
 
   const npmService = new NpmService()
+  const workspacePackageService = new WorkspacePackageService(context)
+  context.subscriptions.push(workspacePackageService)
 
   // 文档选择器 - pnpm-workspace.yaml 文件
   const yamlSelector: vscode.DocumentSelector = {
@@ -41,7 +44,7 @@ export function activate (context: vscode.ExtensionContext) {
   )
 
   // 注册悬停提供者 - YAML
-  const hoverProvider = new HoverProvider(npmService)
+  const hoverProvider = new HoverProvider(npmService, workspacePackageService)
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(yamlSelector, hoverProvider)
   )
@@ -52,7 +55,7 @@ export function activate (context: vscode.ExtensionContext) {
   )
 
   // 注册版本装饰器（传入 context 以支持持久化缓存）
-  const decorationProvider = new VersionDecorationProvider(npmService, context)
+  const decorationProvider = new VersionDecorationProvider(npmService, context, workspacePackageService)
   context.subscriptions.push(decorationProvider)
 
   // 注册命令：选择版本
@@ -197,5 +200,5 @@ export function activate (context: vscode.ExtensionContext) {
 }
 
 export function deactivate () {
-  console.log('Catalog Lens 插件已停用')
+  console.log('Package Lens 插件已停用')
 }

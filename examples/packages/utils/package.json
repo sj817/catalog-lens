@@ -1,0 +1,5 @@
+{
+  "name": "@example/utils",
+  "version": "1.5.3",
+  "description": "Utilities package for testing workspace references"
+}

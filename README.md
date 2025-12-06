@@ -13,8 +13,8 @@
 | ✅ | 最新 | 当前版本已是最新 |
 | 🔶 | 有更新 | 存在更新的版本 |
 | ❌ | 获取失败 | 无法获取版本信息 |
-| 🔗 | 工作区引用 | `workspace:*` 等引用 |
-| ⏭️ | 跳过 | `link:`, `file:` 等协议 |
+| 🔗 | 工作区引用 | `workspace:*` 等引用，显示包路径和版本 |
+| ⏭️ | 跳过 | `link:`, `file:`, `catalog:` 等协议 |
 
 ### 🎯 版本自动补全
 
@@ -132,7 +132,8 @@ catalogs:
 {
   "dependencies": {
     "lodash": "^4.17.21",
-    "@karinjs/core": "workspace:*"
+    "@example/core": "workspace:*",
+    "react": "catalog:"
   },
   "devDependencies": {
     "typescript": "^5.3.0"
@@ -162,7 +163,7 @@ pnpm run watch
 
 ### 项目结构
 
-```
+```text
 package-lens/
 ├── src/
 │   ├── extension.ts              # 插件入口
@@ -171,12 +172,12 @@ package-lens/
 │   │   ├── hoverProvider.ts      # 悬停提示
 │   │   └── decorationProvider.ts # 版本状态装饰
 │   ├── services/
-│   │   └── npmService.ts         # npm API 服务
+│   │   ├── npmService.ts         # npm API 服务
+│   │   └── workspacePackageService.ts # 工作区包服务
 │   └── utils/
 │       ├── fileUtils.ts          # 文件解析工具
 │       └── versionParser.ts      # 版本号解析
-├── examples/
-│   └── pnpm-workspace.yaml       # 测试示例
+├── examples/                     # 测试示例
 ├── package.json
 └── tsconfig.json
 ```

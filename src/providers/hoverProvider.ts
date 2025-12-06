@@ -1,10 +1,14 @@
 import * as vscode from 'vscode'
 import { NpmService } from '../services/npmService'
+import { WorkspacePackageService } from '../services/workspacePackageService'
 import { parseYamlLine, parseJsonLine } from '../utils/fileUtils'
 import { parsePackageValue, VersionPrefix } from '../utils/versionParser'
 
 export class HoverProvider implements vscode.HoverProvider {
-  constructor (private npmService: NpmService) { }
+  constructor (
+    private npmService: NpmService,
+    private workspacePackageService?: WorkspacePackageService
+  ) { }
 
   async provideHover (
     document: vscode.TextDocument,
@@ -48,21 +52,60 @@ export class HoverProvider implements vscode.HoverProvider {
 
     const { packageName, packageValue, valueRange } = lineInfo
 
-    // 跳过 workspace:* 等 pnpm 协议
+    // 处理 workspace: 协议 - 显示本地包信息
+    if (packageValue.startsWith('workspace:')) {
+      return this.createWorkspaceHover(document, packageName, packageValue)
+    }
+
+    // 处理 catalog: 协议
+    if (packageValue.startsWith('catalog:')) {
+      return new vscode.Hover(
+        new vscode.MarkdownString(`⏭️ **Catalog 引用**: \`${packageValue}\``)
+      )
+    }
+
+    // 跳过其他 pnpm 协议
     if (this.isPnpmProtocol(packageValue)) {
       return new vscode.Hover(
-        new vscode.MarkdownString(`🔗 **工作区引用**: \`${packageValue}\``)
+        new vscode.MarkdownString(`🔗 **本地引用**: \`${packageValue}\``)
       )
     }
 
     return this.createHover(packageName, packageValue, valueRange)
   }
 
+  /** 创建工作区包的悬停内容 */
+  private async createWorkspaceHover (
+    document: vscode.TextDocument,
+    packageName: string,
+    packageValue: string
+  ): Promise<vscode.Hover> {
+    // 使用异步方法获取包信息，支持按需扫描
+    const pkgInfo = await this.workspacePackageService?.getPackageInfoForFile(
+      document.fileName,
+      packageName
+    )
+
+    if (pkgInfo) {
+      const md = new vscode.MarkdownString()
+      md.isTrusted = true
+      md.appendMarkdown('### 🔗 工作区包\n\n')
+      md.appendMarkdown(`📦 **${pkgInfo.name}**\n\n`)
+      md.appendMarkdown(`📍 路径: \`${pkgInfo.relativePath}\`\n\n`)
+      md.appendMarkdown(`🏷️ 版本: **${pkgInfo.version}**\n\n`)
+      md.appendMarkdown(`📋 引用: \`${packageValue}\``)
+      return new vscode.Hover(md)
+    }
+
+    // 找不到包信息时的回退显示
+    return new vscode.Hover(
+      new vscode.MarkdownString(`🔗 **工作区引用**: \`${packageValue}\``)
+    )
+  }
+
   /** 检查是否是 pnpm 协议 */
   private isPnpmProtocol (value: string): boolean {
-    return value.startsWith('workspace:') ||
-      value.startsWith('catalog:') ||
-      value.startsWith('link:') ||
+    return value.startsWith('link:') ||
       value.startsWith('file:') ||
       value.startsWith('git:') ||
       value.startsWith('github:')

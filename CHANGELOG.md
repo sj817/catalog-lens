@@ -2,20 +2,24 @@
 
 All notable changes to "Package Lens" will be documented in this file.
 
-## [0.1.2] - 2025-01-XX
+## [0.1.2] - 2025-12-06
 
-### Changed
+### ✨ 新功能
 
-- 🔧 将所有配置项从 `catalogLens.*` 重命名为 `packageLens.*`
-- 🔧 将所有命令从 `catalogLens.*` 重命名为 `packageLens.*`
+- 🔗 **工作区包路径显示**：`workspace:*` 引用现在会显示包的相对路径和版本号（如 `packages/core:2.0.0`）
+- ⏭️ 支持 pnpm `catalog:` 协议语法
+- 📦 新增 `WorkspacePackageService` 服务：自动扫描并缓存工作区内的包信息
+- 🔄 工作区包信息随 `pnpm-workspace.yaml` 和 `package.json` 变化自动更新
 
-### Added
+### 🔧 优化
 
-- ✨ 支持 pnpm catalog 协议（`catalog:` 语法）
+- 将所有配置项从 `catalogLens.*` 重命名为 `packageLens.*`
+- 将所有命令从 `catalogLens.*` 重命名为 `packageLens.*`
+- 使用 YAML 库解析 `pnpm-workspace.yaml`，更可靠
 
-## [0.1.1] - 2025-01-XX
+## [0.1.1] - 2025-12-06
 
-### Changed
+### 变更
 
 - 📦 项目重命名：从 "catalog-lens" 更名为 "package-lens"
 

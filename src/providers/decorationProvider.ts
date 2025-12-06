@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import { format } from 'node:util'
 import { NpmService } from '../services/npmService'
+import { WorkspacePackageService } from '../services/workspacePackageService'
 import { parsePackageValue } from '../utils/versionParser'
 
 /** 版本状态 */
@@ -61,7 +62,7 @@ let outputChannel: vscode.OutputChannel | undefined
 
 function getOutputChannel (): vscode.OutputChannel {
   if (!outputChannel) {
-    outputChannel = vscode.window.createOutputChannel('Catalog Lens')
+    outputChannel = vscode.window.createOutputChannel('Package Lens')
   }
   return outputChannel
 }
@@ -89,9 +90,15 @@ export class VersionDecorationProvider implements vscode.Disposable {
   private updateTimeout: NodeJS.Timeout | undefined
   private versionCache: Map<string, VersionStatusInfo> = new Map()
   private context: vscode.ExtensionContext | undefined
+  private workspacePackageService: WorkspacePackageService | undefined
 
-  constructor (private npmService: NpmService, context?: vscode.ExtensionContext) {
+  constructor (
+    private npmService: NpmService,
+    context?: vscode.ExtensionContext,
+    workspacePackageService?: WorkspacePackageService
+  ) {
     this.context = context
+    this.workspacePackageService = workspacePackageService
     this.decorationType = vscode.window.createTextEditorDecorationType({
       after: {
         margin: '0 0 0 1em',
@@ -99,7 +106,7 @@ export class VersionDecorationProvider implements vscode.Disposable {
     })
 
     // 初始化输出通道并记录启动日志
-    log('Catalog Lens 已启动')
+    log('Package Lens 已启动')
 
     // 从持久化存储加载缓存
     this.loadCache()
@@ -425,7 +432,7 @@ export class VersionDecorationProvider implements vscode.Disposable {
     const decorations: vscode.DecorationOptions[] = []
 
     for (const pkg of packages) {
-      const statusInfo = this.getVersionStatusFromCache(pkg.packageName, pkg.packageValue)
+      const statusInfo = await this.getVersionStatusFromCache(document, pkg.packageName, pkg.packageValue)
       const decoration = this.createDecoration(pkg.line, pkg.lineText, statusInfo)
       if (decoration) {
         decorations.push(decoration)
@@ -436,14 +443,32 @@ export class VersionDecorationProvider implements vscode.Disposable {
   }
 
   /** 从缓存获取版本状态（不发起网络请求） */
-  private getVersionStatusFromCache (packageName: string, version: string): VersionStatusInfo {
-    // 处理特殊协议
+  private async getVersionStatusFromCache (
+    document: vscode.TextDocument,
+    packageName: string,
+    version: string
+  ): Promise<VersionStatusInfo> {
+    // 处理 workspace: 协议 - 显示本地包信息
     if (version.startsWith('workspace:')) {
+      // 使用异步方法，支持按需扫描
+      const pkgInfo = await this.workspacePackageService?.getPackageInfoForFile(
+        document.fileName,
+        packageName
+      )
+      if (pkgInfo) {
+        return {
+          status: VersionStatus.Workspace,
+          currentVersion: version,
+          message: `${pkgInfo.relativePath}:${pkgInfo.version}`,
+        }
+      }
       return { status: VersionStatus.Workspace, currentVersion: version, message: '工作区引用' }
     }
+    // 处理 catalog: 协议
     if (version.startsWith('catalog:')) {
       return { status: VersionStatus.Skipped, currentVersion: version, message: 'Catalog 引用' }
     }
+    // 处理其他本地协议
     if (version.startsWith('link:') || version.startsWith('file:') || version.startsWith('git:') || version.startsWith('github:')) {
       return { status: VersionStatus.Skipped, currentVersion: version, message: '跳过检查' }
     }
