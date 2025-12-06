@@ -1,4 +1,4 @@
-# Catalog Lens
+# Package Lens
 
 一个强大的 VS Code 扩展，为 `pnpm-workspace.yaml` 和 `package.json` 提供 npm 包版本提示、自动补全和版本状态显示。
 
@@ -57,15 +57,15 @@ catalog:
 
 1. 打开 VS Code
 2. 按 `Ctrl+Shift+X` 打开扩展面板
-3. 搜索 "Catalog Lens"
+3. 搜索 "Package Lens"
 4. 点击安装
 
 ### 从源码安装
 
 ```bash
 # 克隆仓库
-git clone https://github.com/karinjs/catalog-lens.git
-cd catalog-lens
+git clone https://github.com/sj817/package-lens.git
+cd package-lens
 
 # 安装依赖
 pnpm install
@@ -81,7 +81,7 @@ pnpm run package
 
 | 配置项 | 类型 | 默认值 | 说明 |
 |--------|------|--------|------|
-| `catalogLens.registry` | string | `https://registry.npmmirror.com` | npm 镜像源地址 |
+| `catalogLens.registry` | string | `""` | 自定义 npm 镜像源地址。留空则自动竞速选择最快的源 |
 | `catalogLens.cacheTimeout` | number | `300000` | 缓存超时时间（毫秒） |
 | `catalogLens.showVersionStatus` | boolean | `true` | 是否显示版本状态 Emoji |
 | `catalogLens.showLatestVersionHint` | boolean | `true` | 悬停时是否显示最新版本提示 |
@@ -100,8 +100,8 @@ pnpm run package
 
 | 命令 | 说明 |
 |------|------|
-| `Catalog Lens: 选择版本` | 打开版本选择列表 |
-| `Catalog Lens: 刷新版本缓存` | 清除缓存并重新获取版本信息 |
+| `Package Lens: 选择版本` | 打开版本选择列表 |
+| `Package Lens: 刷新版本缓存` | 清除缓存并重新获取版本信息 |
 
 ## 📖 使用示例
 
@@ -163,7 +163,7 @@ pnpm run watch
 ### 项目结构
 
 ```
-catalog-lens/
+package-lens/
 ├── src/
 │   ├── extension.ts              # 插件入口
 │   ├── providers/
@@ -197,4 +197,4 @@ MIT License
 
 ## 📮 反馈
 
-如有问题或建议，请在 [GitHub Issues](https://github.com/karinjs/catalog-lens/issues) 中提出。
+如有问题或建议，请在 [GitHub Issues](https://github.com/sj817/package-lens/issues) 中提出。
