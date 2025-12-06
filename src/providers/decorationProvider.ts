@@ -21,16 +21,16 @@ export enum VersionStatus {
 
 /** 版本状态信息 */
 export interface VersionStatusInfo {
-  status: VersionStatus;
-  currentVersion: string;
-  latestVersion?: string;
-  message?: string;
-  fetchedAt?: number;
+  status: VersionStatus
+  currentVersion: string
+  latestVersion?: string
+  message?: string
+  fetchedAt?: number
 }
 
 /** 缓存数据结构 */
 interface CacheData {
-  [key: string]: VersionStatusInfo;
+  [key: string]: VersionStatusInfo
 }
 
 /** 状态对应的 Emoji */
@@ -207,17 +207,17 @@ export class VersionDecorationProvider implements vscode.Disposable {
 
   /** 提取文档中的所有包 */
   private extractPackages (document: vscode.TextDocument): Array<{
-    line: number;
-    packageName: string;
-    packageValue: string;
-    lineText: string;
+    line: number
+    packageName: string
+    packageValue: string
+    lineText: string
   }> {
     const fileName = document.fileName
     const packages: Array<{
-      line: number;
-      packageName: string;
-      packageValue: string;
-      lineText: string;
+      line: number
+      packageName: string
+      packageValue: string
+      lineText: string
     }> = []
 
     if (fileName.endsWith('pnpm-workspace.yaml')) {
@@ -441,6 +441,9 @@ export class VersionDecorationProvider implements vscode.Disposable {
     if (version.startsWith('workspace:')) {
       return { status: VersionStatus.Workspace, currentVersion: version, message: '工作区引用' }
     }
+    if (version.startsWith('catalog:')) {
+      return { status: VersionStatus.Skipped, currentVersion: version, message: 'Catalog 引用' }
+    }
     if (version.startsWith('link:') || version.startsWith('file:') || version.startsWith('git:') || version.startsWith('github:')) {
       return { status: VersionStatus.Skipped, currentVersion: version, message: '跳过检查' }
     }
@@ -473,6 +476,7 @@ export class VersionDecorationProvider implements vscode.Disposable {
     for (const pkg of packages) {
       // 跳过特殊协议
       if (pkg.packageValue.startsWith('workspace:') ||
+        pkg.packageValue.startsWith('catalog:') ||
         pkg.packageValue.startsWith('link:') ||
         pkg.packageValue.startsWith('file:') ||
         pkg.packageValue.startsWith('git:') ||

@@ -4,7 +4,7 @@ import { parseYamlLine, parseJsonLine } from '../utils/fileUtils'
 import { parsePackageValue, formatVersionWithPrefix, buildAliasValue, VersionPrefix } from '../utils/versionParser'
 
 export class CompletionProvider implements vscode.CompletionItemProvider {
-  constructor (private npmService: NpmService) {}
+  constructor (private npmService: NpmService) { }
 
   async provideCompletionItems (
     document: vscode.TextDocument,
@@ -94,10 +94,11 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
   /** 检查是否是 pnpm 协议 */
   private isPnpmProtocol (value: string): boolean {
     return value.startsWith('workspace:') ||
-           value.startsWith('link:') ||
-           value.startsWith('file:') ||
-           value.startsWith('git:') ||
-           value.startsWith('github:')
+      value.startsWith('catalog:') ||
+      value.startsWith('link:') ||
+      value.startsWith('file:') ||
+      value.startsWith('git:') ||
+      value.startsWith('github:')
   }
 
   /**

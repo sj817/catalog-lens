@@ -1,6 +1,23 @@
 # Changelog
 
-All notable changes to "Catalog Lens" will be documented in this file.
+All notable changes to "Package Lens" will be documented in this file.
+
+## [0.1.2] - 2025-01-XX
+
+### Changed
+
+- 🔧 将所有配置项从 `catalogLens.*` 重命名为 `packageLens.*`
+- 🔧 将所有命令从 `catalogLens.*` 重命名为 `packageLens.*`
+
+### Added
+
+- ✨ 支持 pnpm catalog 协议（`catalog:` 语法）
+
+## [0.1.1] - 2025-01-XX
+
+### Changed
+
+- 📦 项目重命名：从 "catalog-lens" 更名为 "package-lens"
 
 ## [0.0.1] - 2025-12-06
 

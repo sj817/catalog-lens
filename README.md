@@ -81,18 +81,18 @@ pnpm run package
 
 | 配置项 | 类型 | 默认值 | 说明 |
 |--------|------|--------|------|
-| `catalogLens.registry` | string | `""` | 自定义 npm 镜像源地址。留空则自动竞速选择最快的源 |
-| `catalogLens.cacheTimeout` | number | `300000` | 缓存超时时间（毫秒） |
-| `catalogLens.showVersionStatus` | boolean | `true` | 是否显示版本状态 Emoji |
-| `catalogLens.showLatestVersionHint` | boolean | `true` | 悬停时是否显示最新版本提示 |
+| `packageLens.registry` | string | `""` | 自定义 npm 镜像源地址。留空则自动竞速选择最快的源 |
+| `packageLens.cacheTimeout` | number | `300000` | 缓存超时时间（毫秒） |
+| `packageLens.showVersionStatus` | boolean | `true` | 是否显示版本状态 Emoji |
+| `packageLens.showLatestVersionHint` | boolean | `true` | 悬停时是否显示最新版本提示 |
 
 ### 配置示例
 
 ```json
 {
-  "catalogLens.registry": "https://registry.npmjs.org",
-  "catalogLens.cacheTimeout": 600000,
-  "catalogLens.showVersionStatus": true
+  "packageLens.registry": "https://registry.npmjs.org",
+  "packageLens.cacheTimeout": 600000,
+  "packageLens.showVersionStatus": true
 }
 ```
 

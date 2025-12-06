@@ -58,7 +58,7 @@ export function activate (context: vscode.ExtensionContext) {
   // 注册命令：选择版本
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'catalogLens.selectVersion',
+      'packageLens.selectVersion',
       async (
         packageName: string,
         currentVersion: string,
@@ -138,7 +138,7 @@ export function activate (context: vscode.ExtensionContext) {
 
   // 注册命令：刷新缓存
   context.subscriptions.push(
-    vscode.commands.registerCommand('catalogLens.refreshCache', () => {
+    vscode.commands.registerCommand('packageLens.refreshCache', () => {
       npmService.clearCache()
       decorationProvider.clearCache()
       vscode.window.showInformationMessage('版本缓存已刷新')
@@ -148,7 +148,7 @@ export function activate (context: vscode.ExtensionContext) {
   // 注册命令：直接更新到最新版本
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'catalogLens.updateToLatest',
+      'packageLens.updateToLatest',
       async (
         packageName: string,
         latestVersion: string,
@@ -189,7 +189,7 @@ export function activate (context: vscode.ExtensionContext) {
   // 监听配置变化
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(e => {
-      if (e.affectsConfiguration('catalogLens')) {
+      if (e.affectsConfiguration('packageLens')) {
         npmService.updateConfig()
       }
     })

@@ -37,7 +37,7 @@ export class NpmService {
   }
 
   private getConfig<T> (key: string, defaultValue: T): T {
-    const config = vscode.workspace.getConfiguration('catalogLens')
+    const config = vscode.workspace.getConfiguration('packageLens')
     return config.get<T>(key, defaultValue)
   }
 

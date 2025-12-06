@@ -4,7 +4,7 @@ import { parseYamlLine, parseJsonLine } from '../utils/fileUtils'
 import { parsePackageValue, VersionPrefix } from '../utils/versionParser'
 
 export class HoverProvider implements vscode.HoverProvider {
-  constructor (private npmService: NpmService) {}
+  constructor (private npmService: NpmService) { }
 
   async provideHover (
     document: vscode.TextDocument,
@@ -61,10 +61,11 @@ export class HoverProvider implements vscode.HoverProvider {
   /** 检查是否是 pnpm 协议 */
   private isPnpmProtocol (value: string): boolean {
     return value.startsWith('workspace:') ||
-           value.startsWith('link:') ||
-           value.startsWith('file:') ||
-           value.startsWith('git:') ||
-           value.startsWith('github:')
+      value.startsWith('catalog:') ||
+      value.startsWith('link:') ||
+      value.startsWith('file:') ||
+      value.startsWith('git:') ||
+      value.startsWith('github:')
   }
 
   /** 创建悬停内容 */
@@ -153,7 +154,7 @@ export class HoverProvider implements vscode.HoverProvider {
         end: { line: valueRange.end.line, character: valueRange.end.character },
       },
     ]))
-    md.appendMarkdown(`[📋 选择其他版本](command:catalogLens.selectVersion?${selectCommand})\n\n`)
+    md.appendMarkdown(`[📋 选择其他版本](command:packageLens.selectVersion?${selectCommand})\n\n`)
 
     // 最近版本列表
     md.appendMarkdown('---\n\n')
@@ -200,6 +201,6 @@ export class HoverProvider implements vscode.HoverProvider {
         end: { line: range.end.line, character: range.end.character },
       },
     ]))
-    return `command:catalogLens.updateToLatest?${args}`
+    return `command:packageLens.updateToLatest?${args}`
   }
 }

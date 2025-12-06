@@ -2,7 +2,7 @@
   "name": "package-lens",
   "displayName": "Package Lens",
   "description": "为 pnpm-workspace.yaml 和 package.json 提供 npm 包版本提示、自动补全和版本状态显示",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "sj817",
   "icon": "images/icon.png",
   "engines": {
@@ -31,35 +31,35 @@
   "contributes": {
     "commands": [
       {
-        "command": "catalogLens.selectVersion",
+        "command": "packageLens.selectVersion",
         "title": "选择版本",
-        "category": "Catalog Lens"
+        "category": "Package Lens"
       },
       {
-        "command": "catalogLens.refreshCache",
+        "command": "packageLens.refreshCache",
         "title": "刷新版本缓存",
-        "category": "Catalog Lens"
+        "category": "Package Lens"
       }
     ],
     "configuration": {
-      "title": "Catalog Lens",
+      "title": "Package Lens",
       "properties": {
-        "catalogLens.registry": {
+        "packageLens.registry": {
           "type": "string",
           "default": "",
           "description": "自定义 npm 镜像源地址。留空则自动竞速选择最快的源(npm 官方 / npmmirror)"
         },
-        "catalogLens.cacheTimeout": {
+        "packageLens.cacheTimeout": {
           "type": "number",
           "default": 300000,
           "description": "缓存超时时间（毫秒），默认 5 分钟"
         },
-        "catalogLens.showVersionStatus": {
+        "packageLens.showVersionStatus": {
           "type": "boolean",
           "default": true,
           "description": "是否在行尾显示版本状态 Emoji"
         },
-        "catalogLens.showLatestVersionHint": {
+        "packageLens.showLatestVersionHint": {
           "type": "boolean",
           "default": true,
           "description": "悬停时是否显示最新版本提示"
