@@ -1,0 +1,44 @@
+# 示例 pnpm-workspace.yaml
+# 用于测试 Catalog Lens 插件功能
+
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+catalog:
+  # 直接版本号格式 - 会显示 ✅ 或 🔶 状态
+  "@karinjs/art-template": 1.1.0
+  chalk: 5.4.1
+  chokidar: 4.0.3
+  yaml: 2.7.0
+  semver: 7.7.3
+  express-rate-limit: 8.2.1
+
+  # 带前缀的版本号
+  typescript: ^5.3.0
+  eslint: ~8.54.0
+
+  # 别名格式 (无版本号) - 会显示 🔶 提示最新版本
+  "@karinjs/node-pty": "npm:@karinjs/node-pty"
+  express: "npm:@karinjs/express"
+  jsonwebtoken: "npm:@karinjs/jsonwebtoken"
+  lodash: "npm:@karinjs/lodash"
+  moment: "npm:@karinjs/moment"
+  redis: "npm:@karinjs/redis"
+  ws: "npm:@karinjs/ws"
+
+  # 别名格式 (带版本号)
+  axios: "npm:@karinjs/axios@1.13.2"
+  log4js: "npm:@karinjs/log4js@1.5.0"
+  node-schedule: "npm:@karinjs/node-schedule@1.1.2"
+  sqlite3: "npm:@karinjs/sqlite3@0.4.2"
+
+catalogs:
+  # 可以定义多个 catalog
+  react18:
+    react: ^18.2.0
+    react-dom: ^18.2.0
+  
+  vue3:
+    vue: ^3.4.0
+    vue-router: ^4.2.0
