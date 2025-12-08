@@ -12,7 +12,7 @@ export function activate (context: vscode.ExtensionContext) {
   // 创建日志通道
   outputChannel = vscode.window.createOutputChannel('Package Lens')
   context.subscriptions.push(outputChannel)
-  
+
   outputChannel.appendLine('Package Lens 插件已激活')
 
   const npmService = new NpmService()

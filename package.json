@@ -2,7 +2,7 @@
   "name": "package-lens",
   "displayName": "Package Lens",
   "description": "为 pnpm-workspace.yaml 和 package.json 提供 npm 包版本提示、自动补全和版本状态显示",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "sj817",
   "icon": "images/icon.png",
   "engines": {
