@@ -5,8 +5,15 @@ import { VersionDecorationProvider } from './providers/decorationProvider'
 import { NpmService } from './services/npmService'
 import { WorkspacePackageService } from './services/workspacePackageService'
 
+// 全局日志通道
+export let outputChannel: vscode.OutputChannel
+
 export function activate (context: vscode.ExtensionContext) {
-  console.log('Package Lens 插件已激活')
+  // 创建日志通道
+  outputChannel = vscode.window.createOutputChannel('Package Lens')
+  context.subscriptions.push(outputChannel)
+  
+  outputChannel.appendLine('Package Lens 插件已激活')
 
   const npmService = new NpmService()
   const workspacePackageService = new WorkspacePackageService(context)
@@ -200,5 +207,5 @@ export function activate (context: vscode.ExtensionContext) {
 }
 
 export function deactivate () {
-  console.log('Package Lens 插件已停用')
+  outputChannel?.appendLine('Package Lens 插件已停用')
 }

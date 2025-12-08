@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as yaml from 'yaml'
+import { outputChannel } from '../extension'
 
 /** 工作区包信息 */
 export interface WorkspacePackageInfo {
@@ -40,7 +41,7 @@ export class WorkspacePackageService implements vscode.Disposable {
 
     // 获取工作区根目录
     this.workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
-    console.log('[WorkspacePackageService] 工作区根目录:', this.workspaceRoot)
+    outputChannel?.appendLine(`[WorkspacePackageService] 工作区根目录: ${this.workspaceRoot}`)
 
     // 从持久化存储加载缓存
     this.loadCache()
@@ -122,22 +123,22 @@ export class WorkspacePackageService implements vscode.Disposable {
     this.packageCache.clear()
 
     if (!this.workspaceRoot) {
-      console.log('[WorkspacePackageService] 没有工作区根目录')
+      outputChannel?.appendLine('[WorkspacePackageService] 没有工作区根目录')
       return
     }
 
     const yamlPath = path.join(this.workspaceRoot, 'pnpm-workspace.yaml')
-    console.log('[WorkspacePackageService] 检查 pnpm-workspace.yaml:', yamlPath)
+    outputChannel?.appendLine(`[WorkspacePackageService] 检查 pnpm-workspace.yaml: ${yamlPath}`)
 
     if (!fs.existsSync(yamlPath)) {
-      console.log('[WorkspacePackageService] pnpm-workspace.yaml 不存在，不是 pnpm 工作区')
+      outputChannel?.appendLine('[WorkspacePackageService] pnpm-workspace.yaml 不存在，不是 pnpm 工作区')
       return
     }
 
     try {
       const content = fs.readFileSync(yamlPath, 'utf-8')
       const patterns = this.parsePackagesConfig(content)
-      console.log('[WorkspacePackageService] 解析到 packages 配置:', patterns)
+      outputChannel?.appendLine(`[WorkspacePackageService] 解析到 packages 配置: ${JSON.stringify(patterns)}`)
 
       // 缓存当前配置
       const packagesMatch = content.match(/packages:\s*([\s\S]*?)(?=\n\w+:|$)/m)
@@ -145,7 +146,7 @@ export class WorkspacePackageService implements vscode.Disposable {
 
       // 获取所有包目录
       const packageDirs = this.resolvePackagePatterns(this.workspaceRoot, patterns)
-      console.log('[WorkspacePackageService] 找到包目录:', packageDirs)
+      outputChannel?.appendLine(`[WorkspacePackageService] 找到包目录: ${JSON.stringify(packageDirs)}`)
 
       // 读取每个包的 package.json
       for (const dir of packageDirs) {
@@ -161,18 +162,18 @@ export class WorkspacePackageService implements vscode.Disposable {
                 relativePath,
                 absolutePath: dir,
               })
-              console.log('[WorkspacePackageService] 添加包:', pkgJson.name, '@', pkgJson.version, '路径:', relativePath)
+              outputChannel?.appendLine(`[WorkspacePackageService] 添加包: ${pkgJson.name}@${pkgJson.version} 路径: ${relativePath}`)
             }
           } catch (err) {
-            console.error('[WorkspacePackageService] 解析 package.json 失败:', pkgJsonPath, err)
+            outputChannel?.appendLine(`[WorkspacePackageService] 解析 package.json 失败: ${pkgJsonPath} - ${err}`)
           }
         }
       }
 
-      console.log('[WorkspacePackageService] 扫描完成，共找到', this.packageCache.size, '个包')
+      outputChannel?.appendLine(`[WorkspacePackageService] 扫描完成，共找到 ${this.packageCache.size} 个包`)
       this.saveCache()
     } catch (err) {
-      console.error('[WorkspacePackageService] 扫描失败:', err)
+      outputChannel?.appendLine(`[WorkspacePackageService] 扫描失败: ${err}`)
     }
   }
 
@@ -184,10 +185,10 @@ export class WorkspacePackageService implements vscode.Disposable {
       const doc = yaml.parse(content)
       const packages = doc?.packages
 
-      console.log('[WorkspacePackageService] YAML 解析 packages:', packages)
+      outputChannel?.appendLine(`[WorkspacePackageService] YAML 解析 packages: ${JSON.stringify(packages)}`)
 
       if (!packages || !Array.isArray(packages)) {
-        console.log('[WorkspacePackageService] packages 不是数组或不存在')
+        outputChannel?.appendLine('[WorkspacePackageService] packages 不是数组或不存在')
         return patterns
       }
 
@@ -197,11 +198,11 @@ export class WorkspacePackageService implements vscode.Disposable {
         const isNegation = item.startsWith('!')
         const pattern = isNegation ? item.slice(1) : item
 
-        console.log('[WorkspacePackageService] 解析 pattern:', item, '-> pattern:', pattern, 'isNegation:', isNegation)
+        outputChannel?.appendLine(`[WorkspacePackageService] 解析 pattern: ${item} -> pattern: ${pattern} isNegation: ${isNegation}`)
         patterns.push({ pattern, isNegation })
       }
     } catch (err) {
-      console.error('[WorkspacePackageService] YAML 解析失败:', err)
+      outputChannel?.appendLine(`[WorkspacePackageService] YAML 解析失败: ${err}`)
     }
 
     return patterns
@@ -287,14 +288,14 @@ export class WorkspacePackageService implements vscode.Disposable {
   /** 根据包名获取包信息 */
   getPackageInfo (packageName: string): WorkspacePackageInfo | undefined {
     const info = this.packageCache.get(packageName)
-    console.log('[WorkspacePackageService] 查询包:', packageName, '结果:', info ? `${info.relativePath}:${info.version}` : '未找到')
+    outputChannel?.appendLine(`[WorkspacePackageService] 查询包: ${packageName} 结果: ${info ? `${info.relativePath}:${info.version}` : '未找到'}`)
     return info
   }
 
   /** 兼容旧接口 */
   async getPackageInfoForFile (_filePath: string, packageName: string): Promise<WorkspacePackageInfo | undefined> {
     const info = this.packageCache.get(packageName)
-    console.log('[WorkspacePackageService] 查询包(async):', packageName, '结果:', info ? `${info.relativePath}:${info.version}` : '未找到')
+    outputChannel?.appendLine(`[WorkspacePackageService] 查询包(async): ${packageName} 结果: ${info ? `${info.relativePath}:${info.version}` : '未找到'}`)
     return info
   }
 
