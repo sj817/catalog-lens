@@ -46,18 +46,23 @@ export class HoverProvider implements vscode.HoverProvider {
     position: vscode.Position
   ): Promise<vscode.Hover | null> {
     const lineInfo = parseJsonLine(document, position)
-    if (!lineInfo || !lineInfo.inDependencySection || !lineInfo.cursorInValue) {
+    if (!lineInfo || !lineInfo.cursorInValue) {
       return null
     }
 
-    const { packageName, packageValue, valueRange } = lineInfo
+    const { packageName, packageValue, valueRange, inDependencySection, inWorkspaceCatalog } = lineInfo
+
+    // 只在依赖区块或 workspaces.catalog 区块中提供悬停
+    if (!inDependencySection && !inWorkspaceCatalog) {
+      return null
+    }
 
     // 处理 workspace: 协议 - 显示本地包信息
     if (packageValue.startsWith('workspace:')) {
       return this.createWorkspaceHover(document, packageName, packageValue)
     }
 
-    // 处理 catalog: 协议
+    // 处理 catalog: 协议 (在 dependencies 中引用 catalog)
     if (packageValue.startsWith('catalog:')) {
       return new vscode.Hover(
         new vscode.MarkdownString(`⏭️ **Catalog 引用**: \`${packageValue}\``)
@@ -71,6 +76,7 @@ export class HoverProvider implements vscode.HoverProvider {
       )
     }
 
+    // 为 workspaces.catalog 中的依赖提供完整的悬停信息（支持版本更新）
     return this.createHover(packageName, packageValue, valueRange)
   }
 

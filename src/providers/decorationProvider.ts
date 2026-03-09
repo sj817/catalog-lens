@@ -390,6 +390,50 @@ export class VersionDecorationProvider implements vscode.Disposable {
           }
         }
       }
+
+      // 支持 workspaces.catalog (Bun/PNPM)
+      if (json.workspaces?.catalog) {
+        const catalogPackages = json.workspaces.catalog
+        let inWorkspaces = false
+        let inCatalog = false
+        let braceCount = 0
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i]
+
+          if (line.includes('"workspaces"')) {
+            inWorkspaces = true
+          }
+
+          if (inWorkspaces && line.includes('"catalog"')) {
+            inCatalog = true
+            braceCount = 0
+          }
+
+          if (inCatalog) {
+            braceCount += (line.match(/{/g) || []).length
+            braceCount -= (line.match(/}/g) || []).length
+
+            // 解析包行
+            const pkgMatch = line.match(/^\s*"([^"]+)":\s*"([^"]*)"/)
+            if (pkgMatch && braceCount > 0) {
+              const [, packageName, version] = pkgMatch
+              packages.push({
+                line: i,
+                packageName,
+                packageValue: version,
+                lineText: line,
+              })
+            }
+
+            // 离开 catalog 区块
+            if (braceCount <= 0 && i > 0) {
+              inCatalog = false
+              inWorkspaces = false
+            }
+          }
+        }
+      }
     } catch {
       // JSON 解析失败
     }

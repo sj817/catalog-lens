@@ -48,6 +48,8 @@ export interface JsonLineInfo {
   valueRange: vscode.Range
   /** 当前光标是否在值的位置 */
   cursorInValue: boolean
+  /** 是否在 workspaces.catalog 区块中 */
+  inWorkspaceCatalog?: boolean
 }
 
 /**
@@ -217,7 +219,12 @@ export function parseJsonLine (
 
   // 检查是否在依赖区块中
   const sectionInfo = findDependencySection(document, position.line)
-  if (!sectionInfo.inSection) {
+
+  // 检查是否在 workspaces.catalog 区块中 (Bun/PNPM catalog)
+  const catalogInfo = findWorkspaceCatalogSection(document, position.line)
+  const inCatalog = catalogInfo.inCatalog
+
+  if (!sectionInfo.inSection && !inCatalog) {
     return null
   }
 
@@ -236,12 +243,13 @@ export function parseJsonLine (
   )
 
   return {
-    inDependencySection: true,
-    sectionName: sectionInfo.sectionName!,
+    inDependencySection: sectionInfo.inSection,
+    sectionName: sectionInfo.sectionName || '',
     packageName,
     packageValue,
     valueRange,
     cursorInValue: position.character >= valueStartIndex && position.character <= valueEndIndex,
+    inWorkspaceCatalog: inCatalog,
   }
 }
 
@@ -278,4 +286,41 @@ function findDependencySection (
   }
 
   return { inSection: false }
+}
+
+/**
+ * 查找当前行是否在 workspaces.catalog 区块中 (Bun/PNPM)
+ */
+function findWorkspaceCatalogSection (
+  document: vscode.TextDocument,
+  lineNumber: number
+): { inCatalog: boolean } {
+  let braceCount = 0
+  let inWorkspaces = false
+
+  // 向上查找 workspaces.catalog 区块
+  for (let i = lineNumber; i >= 0; i--) {
+    const line = document.lineAt(i).text
+
+    // 计算括号
+    braceCount += (line.match(/}/g) || []).length
+    braceCount -= (line.match(/{/g) || []).length
+
+    // 如果括号匹配完毕，说明已经离开当前区块
+    if (braceCount > 0 && i < lineNumber) {
+      break
+    }
+
+    // 检查是否是 workspaces 区块
+    if (line.includes('"workspaces"')) {
+      inWorkspaces = true
+    }
+
+    // 检查是否是 catalog 区块
+    if (inWorkspaces && line.includes('"catalog"')) {
+      return { inCatalog: true }
+    }
+  }
+
+  return { inCatalog: false }
 }
