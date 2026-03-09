@@ -49,7 +49,7 @@ catalog:
 ### 📁 支持的文件
 
 - `pnpm-workspace.yaml` - catalog 区块中的依赖
-- `package.json` - dependencies, devDependencies 等区块
+- `package.json` - dependencies, devDependencies 等区块，以及 **workspaces.catalog 区块（Bun/PNPM）**
 
 ## 📥 安装
 
@@ -130,13 +130,22 @@ catalogs:
 
 ```json
 {
+  "workspaces": {
+    "packages": ["apps/*", "packages/*"],
+    "catalog": {
+      "chalk": "^5.4.1",
+      "typescript": "^5.3.0",
+      "react": "^18.2.0"
+    }
+  },
   "dependencies": {
     "lodash": "^4.17.21",
     "@example/core": "workspace:*",
+    "chalk": "catalog:",
     "react": "catalog:"
   },
   "devDependencies": {
-    "typescript": "^5.3.0"
+    "typescript": "catalog:"
   }
 }
 ```

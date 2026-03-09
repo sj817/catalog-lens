@@ -69,11 +69,16 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
     position: vscode.Position
   ): Promise<vscode.CompletionItem[] | null> {
     const lineInfo = parseJsonLine(document, position)
-    if (!lineInfo || !lineInfo.inDependencySection) {
+    if (!lineInfo) {
       return null
     }
 
-    const { packageName, packageValue, valueRange } = lineInfo
+    const { packageName, packageValue, valueRange, inDependencySection, inWorkspaceCatalog } = lineInfo
+
+    // 只在依赖区块或 workspaces.catalog 区块中提供补全
+    if (!inDependencySection && !inWorkspaceCatalog) {
+      return null
+    }
 
     // 跳过 workspace:* 等 pnpm 协议
     if (this.isPnpmProtocol(packageValue)) {
