@@ -9,8 +9,8 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
   async provideCompletionItems (
     document: vscode.TextDocument,
     position: vscode.Position,
-    token: vscode.CancellationToken,
-    context: vscode.CompletionContext
+    _token: vscode.CancellationToken,
+    _context: vscode.CompletionContext
   ): Promise<vscode.CompletionItem[] | null> {
     const fileName = document.fileName
 

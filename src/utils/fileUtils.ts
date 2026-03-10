@@ -203,19 +203,11 @@ export function parseJsonLine (
   // 检查是否是 "key": "value" 格式
   const kvMatch = lineText.match(/^\s*"([^"]+)"\s*:\s*"([^"]*)"/)
   if (!kvMatch) {
-    // 也支持空值的情况 "key": ""
-    const emptyMatch = lineText.match(/^\s*"([^"]+)"\s*:\s*""/)
-    if (!emptyMatch) {
-      return null
-    }
-  }
-
-  const packageName = kvMatch ? kvMatch[1] : lineText.match(/^\s*"([^"]+)"/)?.[1]
-  const packageValue = kvMatch ? kvMatch[2] : ''
-
-  if (!packageName) {
     return null
   }
+
+  const packageName = kvMatch[1]
+  const packageValue = kvMatch[2]
 
   // 检查是否在依赖区块中
   const sectionInfo = findDependencySection(document, position.line)
@@ -296,7 +288,7 @@ function findWorkspaceCatalogSection (
   lineNumber: number
 ): { inCatalog: boolean } {
   let braceCount = 0
-  let inWorkspaces = false
+  let foundCatalog = false
 
   // 向上查找 workspaces.catalog 区块
   for (let i = lineNumber; i >= 0; i--) {
@@ -311,13 +303,13 @@ function findWorkspaceCatalogSection (
       break
     }
 
-    // 检查是否是 workspaces 区块
-    if (line.includes('"workspaces"')) {
-      inWorkspaces = true
+    // 向上搜索时先遇到 catalog 再遇到 workspaces
+    if (!foundCatalog && /"catalog"\s*:/.test(line)) {
+      foundCatalog = true
     }
 
-    // 检查是否是 catalog 区块
-    if (inWorkspaces && line.includes('"catalog"')) {
+    // 找到 catalog 后继续向上查找 workspaces
+    if (foundCatalog && /"workspaces"\s*:/.test(line)) {
       return { inCatalog: true }
     }
   }

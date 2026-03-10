@@ -1,8 +1,10 @@
 import * as vscode from 'vscode'
 import { format } from 'node:util'
+import JSON5 from 'json5'
 import { NpmService } from '../services/npmService'
 import { WorkspacePackageService } from '../services/workspacePackageService'
 import { parsePackageValue } from '../utils/versionParser'
+import { outputChannel } from '../extension'
 
 /** 版本状态 */
 export enum VersionStatus {
@@ -57,31 +59,17 @@ const STATUS_COLORS: Record<VersionStatus, string> = {
 /** 缓存有效期 (1小时) */
 const CACHE_TTL = 60 * 60 * 1000
 
-/** 输出日志通道 */
-let outputChannel: vscode.OutputChannel | undefined
-
-function getOutputChannel (): vscode.OutputChannel {
-  if (!outputChannel) {
-    outputChannel = vscode.window.createOutputChannel('Package Lens')
-  }
-  return outputChannel
-}
-
 function log (message: string): void {
-  const channel = getOutputChannel()
   const timestamp = new Date().toISOString()
-  channel.appendLine(`[${timestamp}] ${message}`)
+  outputChannel?.appendLine(`[${timestamp}] ${message}`)
 }
 
 function logError (message: string, error?: unknown): void {
-  const channel = getOutputChannel()
   const timestamp = new Date().toISOString()
-  channel.appendLine(`[${timestamp}] ❌ ${message}`)
+  outputChannel?.appendLine(`[${timestamp}] ❌ ${message}`)
   if (error) {
-    channel.appendLine(format(error))
+    outputChannel?.appendLine(format(error))
   }
-  // 发生错误时显示输出通道
-  channel.show(true)
 }
 
 export class VersionDecorationProvider implements vscode.Disposable {
@@ -120,12 +108,12 @@ export class VersionDecorationProvider implements vscode.Disposable {
       })
     )
 
-    // 监听文档变化
+    // 监听文档变化（使用较长的防抖时间，避免编辑时频繁请求）
     this.disposables.push(
       vscode.workspace.onDidChangeTextDocument(event => {
         const editor = vscode.window.activeTextEditor
         if (editor && event.document === editor.document) {
-          this.triggerUpdateDecorations(editor, false)
+          this.triggerUpdateDecorations(editor, false, 1000)
         }
       })
     )
@@ -173,13 +161,13 @@ export class VersionDecorationProvider implements vscode.Disposable {
     this.context.globalState.update('versionCache', cacheData)
   }
 
-  private triggerUpdateDecorations (editor: vscode.TextEditor, forceRefresh: boolean): void {
+  private triggerUpdateDecorations (editor: vscode.TextEditor, forceRefresh: boolean, delay = 200): void {
     if (this.updateTimeout) {
       clearTimeout(this.updateTimeout)
     }
     this.updateTimeout = setTimeout(() => {
       this.updateDecorations(editor, forceRefresh, false)
-    }, 200)
+    }, delay)
   }
 
   private triggerUpdateDecorationsWithRetry (editor: vscode.TextEditor): void {
@@ -346,7 +334,7 @@ export class VersionDecorationProvider implements vscode.Disposable {
   ): void {
     try {
       const text = document.getText()
-      const json = JSON.parse(text)
+      const json = JSON5.parse(text)
       const lines = text.split('\n')
 
       const depSections = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']
@@ -393,7 +381,6 @@ export class VersionDecorationProvider implements vscode.Disposable {
 
       // 支持 workspaces.catalog (Bun/PNPM)
       if (json.workspaces?.catalog) {
-        const catalogPackages = json.workspaces.catalog
         let inWorkspaces = false
         let inCatalog = false
         let braceCount = 0
@@ -434,8 +421,9 @@ export class VersionDecorationProvider implements vscode.Disposable {
           }
         }
       }
-    } catch {
-      // JSON 解析失败
+    } catch (e) {
+      // JSON 解析失败，仅打印日志
+      log(`JSON 解析失败: ${e instanceof Error ? e.message : String(e)}`)
     }
   }
 
@@ -584,7 +572,7 @@ export class VersionDecorationProvider implements vscode.Disposable {
     }
 
     // 并行获取，但每完成一个就更新一次
-    const fetchPromises = packagesToFetch.map(async ({ pkg, cacheKey, parsed }) => {
+    const fetchPromises = packagesToFetch.map(async ({ pkg: _pkg, cacheKey, parsed }) => {
       const fetchTime = Date.now()
       try {
         const latestVersion = await this.npmService.getLatestVersion(parsed.realPackageName)
@@ -712,9 +700,5 @@ export class VersionDecorationProvider implements vscode.Disposable {
     this.saveCache()
     this.decorationType.dispose()
     this.disposables.forEach(d => d.dispose())
-    if (outputChannel) {
-      outputChannel.dispose()
-      outputChannel = undefined
-    }
   }
 }

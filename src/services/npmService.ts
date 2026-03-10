@@ -136,7 +136,8 @@ export class NpmService {
    */
   private fetchFromRegistry (registryUrl: string, packageName: string): Promise<PackageInfo> {
     return new Promise((resolve, reject) => {
-      const url = `${registryUrl}/${encodeURIComponent(packageName).replace('%40', '@')}`
+      const cleanUrl = registryUrl.replace(/\/+$/, '')
+      const url = `${cleanUrl}/${encodeURIComponent(packageName).replace('%40', '@')}`
       const protocol = url.startsWith('https') ? https : http
 
       const request = protocol.get(url, {
@@ -156,14 +157,13 @@ export class NpmService {
         response.on('end', () => {
           try {
             const json: NpmRegistryResponse = JSON.parse(data)
-            const versions = Object.keys(json.versions || {})
-              .filter(v => !v.includes('-')) // 过滤预发布版本
-              .sort((a, b) => this.compareVersions(b, a)) // 降序排列
-
             const allVersions = Object.keys(json.versions || {})
               .sort((a, b) => this.compareVersions(b, a))
 
-            const latestVersion = json['dist-tags']?.latest || versions[0] || ''
+            const latestVersion = json['dist-tags']?.latest
+              || allVersions.find(v => !v.includes('-'))
+              || allVersions[0]
+              || ''
 
             resolve({
               versions: allVersions,

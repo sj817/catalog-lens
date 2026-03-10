@@ -90,9 +90,10 @@ export function activate (context: vscode.ExtensionContext) {
           rangeData.end.character
         )
 
-        // 创建快速选择项
-        const latestVersion = versions[0]
-        const items = versions.slice(0, 50).map(v => {
+        // 过滤预发布版本，显示所有稳定版本
+        const stableVersions = versions.filter(v => !v.includes('-'))
+        const latestVersion = stableVersions[0] || versions[0]
+        const items = stableVersions.map(v => {
           // 根据是否是别名格式构建显示的标签
           const displayLabel = isAlias
             ? `npm:${packageName}@${prefix}${v}`
@@ -127,21 +128,48 @@ export function activate (context: vscode.ExtensionContext) {
             description,
             detail,
             version: v,
+            // 默认情况下 alwaysShow 设为 true，为了后续我们自定义过滤和排序
+            alwaysShow: true,
           }
         })
 
-        const selected = await vscode.window.showQuickPick(items, {
-          placeHolder: `选择 ${packageName} 的版本`,
+        // 使用 createQuickPick 以便我们可以接管搜索和排序逻辑，防止 VSCode 默认的模糊搜索打乱排序
+        const quickPick = vscode.window.createQuickPick<vscode.QuickPickItem & { version: string }>()
+        quickPick.placeholder = `选择 ${packageName} 的版本`
+        quickPick.items = items
+
+        // 监听用户输入进行自定义过滤，并保持原来的降序排列
+        quickPick.onDidChangeValue(value => {
+          if (!value) {
+            quickPick.items = items
+            return
+          }
+          const lowerValue = value.toLowerCase()
+          // 仅保留匹配的项，并依靠 items 原本的正确降序
+          quickPick.items = items.filter(item => {
+            return item.label.toLowerCase().includes(lowerValue) ||
+              item.version.toLowerCase().includes(lowerValue)
+          })
         })
 
-        if (selected) {
-          const editor = vscode.window.activeTextEditor
-          if (editor) {
-            await editor.edit(editBuilder => {
-              editBuilder.replace(range, selected.label)
-            })
+        quickPick.onDidAccept(async () => {
+          const selected = quickPick.selectedItems[0]
+          if (selected) {
+            const editor = vscode.window.activeTextEditor
+            if (editor) {
+              await editor.edit(editBuilder => {
+                editBuilder.replace(range, selected.label)
+              })
+            }
           }
-        }
+          quickPick.hide()
+        })
+
+        quickPick.onDidHide(() => {
+          quickPick.dispose()
+        })
+
+        quickPick.show()
       }
     )
   )

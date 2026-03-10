@@ -2,7 +2,7 @@
   "name": "package-lens",
   "displayName": "Package Lens",
   "description": "为 pnpm-workspace.yaml 和 package.json 提供 npm 包版本提示、自动补全和版本状态显示",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "publisher": "sj817",
   "icon": "images/icon.png",
   "engines": {
@@ -27,7 +27,7 @@
     "workspaceContains:pnpm-workspace.yaml",
     "workspaceContains:package.json"
   ],
-  "main": "./dist/extension.js",
+  "main": "./dist/extension.cjs",
   "contributes": {
     "commands": [
       {
@@ -68,12 +68,11 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run esbuild-base -- --production",
-    "esbuild-base": "node esbuild.js",
-    "compile": "pnpm run esbuild-base",
-    "watch": "pnpm run esbuild-base -- --watch",
+    "vscode:prepublish": "pnpm run compile -- --minify",
+    "compile": "tsdown",
+    "watch": "tsdown --watch",
     "pretest": "pnpm run compile && pnpm run lint",
-    "lint": "eslint src --ext ts",
+    "lint": "oxlint src",
     "test": "vscode-test",
     "package": "vsce package --no-dependencies",
     "publish": "vsce publish --no-dependencies"
@@ -81,15 +80,13 @@
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@types/vscode": "^1.85.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.0",
-    "@typescript-eslint/parser": "^6.13.0",
     "@vscode/vsce": "^3.2.2",
-    "esbuild": "^0.27.1",
-    "eslint": "^9.39.1",
-    "neostandard": "^0.12.2",
+    "oxlint": "^1.51.0",
+    "tsdown": "^0.21.1",
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "json5": "^2.2.3",
     "yaml": "^2.3.4"
   },
   "repository": {

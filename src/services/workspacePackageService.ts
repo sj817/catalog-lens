@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as yaml from 'yaml'
+import JSON5 from 'json5'
 import { outputChannel } from '../extension'
 
 /** 工作区包信息 */
@@ -153,7 +154,7 @@ export class WorkspacePackageService implements vscode.Disposable {
         const pkgJsonPath = path.join(dir, 'package.json')
         if (fs.existsSync(pkgJsonPath)) {
           try {
-            const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf-8'))
+            const pkgJson = JSON5.parse(fs.readFileSync(pkgJsonPath, 'utf-8'))
             if (pkgJson.name && pkgJson.version) {
               const relativePath = path.relative(this.workspaceRoot, dir).replace(/\\/g, '/')
               this.packageCache.set(pkgJson.name, {
@@ -232,6 +233,12 @@ export class WorkspacePackageService implements vscode.Disposable {
   /** 展开 glob 模式 */
   private expandGlobPattern (basePath: string, pattern: string): string[] {
     const results: string[] = []
+
+    // 安全检查：禁止路径遍历
+    if (pattern.includes('..')) {
+      outputChannel?.appendLine(`[WorkspacePackageService] 跳过包含 '..' 的不安全路径模式: ${pattern}`)
+      return results
+    }
 
     if (pattern.includes('**')) {
       // 递归匹配: packages/** 或 components/**
