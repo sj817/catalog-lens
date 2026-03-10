@@ -189,7 +189,7 @@ export class HoverProvider implements vscode.HoverProvider {
         md.appendMarkdown(`[⬆️ 更新到最新版本](${updateCommand})\n\n`)
 
         // 查找当前大版本的最新版本
-        const currentMajorMatch = currentVersion.match(/^(\d+)\./) 
+        const currentMajorMatch = currentVersion.match(/^(\d+)\./)
         if (currentMajorMatch) {
           const currentMajor = currentMajorMatch[1]
           const stableVersions = versions.filter(v => !v.includes('-'))

@@ -9,7 +9,9 @@
         "--extensionDevelopmentPath=${workspaceFolder}",
         "${workspaceFolder}/examples"
       ],
-      "outFiles": ["${workspaceFolder}/dist/**/*.cjs"],
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.cjs"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     }
   ]
